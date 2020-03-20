@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -53,6 +54,80 @@ func createItem(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result.Value)                                                                   // Responds with the last record
 }
 
+// Gets all the complete items
+func getCompleteItems(w http.ResponseWriter, r *http.Request) {
+	log.Info("Getting completed items")
+	completedItems := getItemsByCompletion(true)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(completedItems)
+}
+
+// Gets all the incomplete items
+func getIncompleteItems(w http.ResponseWriter, r *http.Request) {
+	log.Info("Getting incomplete items")
+	incompleItems := getItemsByCompletion(false)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(incompleItems)
+}
+
+// Updates the completion of an item
+func updateItem(w http.ResponseWriter, r *http.Request) {
+	log.Info("Updating specific item")
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"]) // string to int
+
+	err := getItemsByID(id)
+	if err == false {
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
+	} else {
+		completed, _ := strconv.ParseBool(r.FormValue("completed")) // Parses the bool from the POST
+		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating Item")
+		todo := &ToDoItem{}
+		db.First(&todo, id)
+		todo.completion = completed
+		w.Header().Set("Content-Type", "application/json")
+	}
+
+}
+
+func deleteItem(w http.ResponseWriter, r *http.Request) {
+	// Gets the ID from the request and converts it from string to int
+	vars := mux.Vars(r) // Gets the variable from the request
+	id, _ := strconv.Atoi(vars["id"])
+
+	err := getItemsByID(id)
+	if err == false {
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"deleted": false, "error" "Record Not Found"}`) // Error JSON
+	} else {
+		log.WithFields(log.Fields{"Id": id}).Info("Deleting Item")
+		todo := &ToDoItem{}
+		db.First(&todo, id)
+		db.Delete(&todo)
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"deleted": true}`)
+	}
+
+}
+
+func getItemsByCompletion(completion bool) interface{} {
+	var tditems []ToDoItem
+	toDoItems := db.Where("completion = ?", completion).Find(&tditems).Value
+	return toDoItems
+}
+
+// getItemsByID checks for the existence of an item by a specific ID
+func getItemsByID(id int) bool {
+	todo := &ToDoItem{}
+	result := db.First(&todo, id)
+	if result.Error != nil {
+		log.Warn("Item not found in the database")
+		return false
+	}
+	return true
+}
+
 func main() {
 	defer db.Close()
 
@@ -75,5 +150,9 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/ping", health).Methods("GET")
 	router.HandleFunc("/todo", createItem).Methods("POST")
+	router.HandleFunc("/todo-complete", getCompleteItems).Methods("GET")
+	router.HandleFunc("/todo-incomplete", getIncompleteItems).Methods("GET")
+	router.HandleFunc("/todo/{id}", updateItem).Methods("POST")
+	router.HandleFunc("/todo/{id}", deleteItem).Methods("DELETE")
 	http.ListenAndServe(":8000", router)
 }
