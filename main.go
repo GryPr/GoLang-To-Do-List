@@ -50,6 +50,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	if err == nil {
+		fmt.Println("Sucessfully connected to the database")
+	}
 	defer db.Close()
 
 	// Setting up the router
