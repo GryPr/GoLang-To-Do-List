@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,14 +36,25 @@ func init() {
 }
 
 // Health returns the API health
-func Health(w http.ResponseWriter, r *http.Request) {
+func health(w http.ResponseWriter, r *http.Request) {
 	log.Info("API Health is OK")                       // Logs to console API Health
 	w.Header().Set("Content-Type", "application/json") // Sets the content type to JSON
 	io.WriteString(w, `{"alive": true}`)               // JSON response to client
 }
 
+// createItem adds a new To-Do item to the database
+func createItem(w http.ResponseWriter, r *http.Request) {
+	description := r.FormValue("description")                                                                 // Obtaining the value from POST
+	log.WithFields(log.Fields{"description": description}).Info("Adding new item and saving to the database") // Logs to console the description
+	todo := &ToDoItem{description: description, completion: false}                                            // Passes ToDoItem struct by reference
+	db.Create(&todo)                                                                                          // Inserts the struct into the database
+	result := db.Last(&todo)                                                                                  // Gets last record ordered by primary key
+	w.Header().Set("Content-Type", "application/json")                                                        // Adds json header
+	json.NewEncoder(w).Encode(result.Value)                                                                   // Responds with the last record
+}
+
 func main() {
-	log.Info("Starting API Server")
+	defer db.Close()
 
 	// Setting up database
 	psqlInfo := fmt.Sprintf("host=%s port =%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
@@ -53,10 +65,15 @@ func main() {
 	if err == nil {
 		fmt.Println("Sucessfully connected to the database")
 	}
-	defer db.Close()
+
+	db.Debug().DropTableIfExists(&ToDoItem{})
+	db.Debug().AutoMigrate(&ToDoItem{})
+
+	log.Info("Starting API Server")
 
 	// Setting up the router
 	router := mux.NewRouter()
-	router.HandleFunc("/ping", Health).Methods("GET")
+	router.HandleFunc("/ping", health).Methods("GET")
+	router.HandleFunc("/todo", createItem).Methods("POST")
 	http.ListenAndServe(":8000", router)
 }
