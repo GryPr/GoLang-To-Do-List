@@ -21,8 +21,8 @@ const (
 	dbname   = "todo"
 )
 
-var db *gorm.DB
-var err error
+var psqlInfo string = fmt.Sprintf("host=%s port =%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+var db, err = gorm.Open("postgres", psqlInfo)
 
 // ToDoItem struct contains the data of a to-do item
 type ToDoItem struct {
@@ -45,13 +45,13 @@ func health(w http.ResponseWriter, r *http.Request) {
 
 // createItem adds a new To-Do item to the database
 func createItem(w http.ResponseWriter, r *http.Request) {
-	description := r.FormValue("description")                                                                 // Obtaining the value from POST
-	log.WithFields(log.Fields{"description": description}).Info("Adding new item and saving to the database") // Logs to console the description
-	todo := &ToDoItem{description: description, completion: false}                                            // Passes ToDoItem struct by reference
-	db.Create(&todo)                                                                                          // Inserts the struct into the database
-	result := db.Last(&todo)                                                                                  // Gets last record ordered by primary key
-	w.Header().Set("Content-Type", "application/json")                                                        // Adds json header
-	json.NewEncoder(w).Encode(result.Value)                                                                   // Responds with the last record
+	desc := r.FormValue("description")                                                                 // Obtaining the value from POST
+	log.WithFields(log.Fields{"description": desc}).Info("Adding new item and saving to the database") // Logs to console the description
+	todo := ToDoItem{description: desc, completion: false}                                             // Passes ToDoItem
+	db.Create(&todo)                                                                                   // Inserts the struct into the database
+	result := db.Last(&todo)                                                                           // Gets last record ordered by primary key
+	w.Header().Set("Content-Type", "application/json")                                                 // Adds json header
+	json.NewEncoder(w).Encode(result.Value)                                                            // Responds with the last record
 }
 
 // Gets all the complete items
@@ -132,8 +132,7 @@ func main() {
 	defer db.Close()
 
 	// Setting up database
-	psqlInfo := fmt.Sprintf("host=%s port =%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	db, err := gorm.Open("postgres", psqlInfo)
+
 	if err != nil {
 		panic(err)
 	}
