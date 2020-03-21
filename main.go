@@ -26,9 +26,9 @@ var db, err = gorm.Open("postgres", psqlInfo)
 
 // ToDoItem struct contains the data of a to-do item
 type ToDoItem struct {
-	id          int `gorm:"primary_key"`
-	description string
-	completion  bool
+	ID          int    `gorm:"primary_key;auto_increment"`
+	Description string `json:"description"`
+	Completion  bool   `json:"completion"`
 }
 
 func init() {
@@ -45,13 +45,17 @@ func health(w http.ResponseWriter, r *http.Request) {
 
 // createItem adds a new To-Do item to the database
 func createItem(w http.ResponseWriter, r *http.Request) {
-	desc := r.FormValue("description")                                                                 // Obtaining the value from POST
-	log.WithFields(log.Fields{"description": desc}).Info("Adding new item and saving to the database") // Logs to console the description
-	todo := ToDoItem{description: desc, completion: false}                                             // Passes ToDoItem
-	db.Create(&todo)                                                                                   // Inserts the struct into the database
-	result := db.Last(&todo)                                                                           // Gets last record ordered by primary key
-	w.Header().Set("Content-Type", "application/json")                                                 // Adds json header
-	json.NewEncoder(w).Encode(result.Value)                                                            // Responds with the last record
+	decoder := json.NewDecoder(r.Body)
+	var todo ToDoItem
+	err := decoder.Decode(&todo)
+	if err != nil {
+		panic(err)
+	}
+	log.WithFields(log.Fields{"description": todo.Description}).Info("Adding new item and saving to the database") // Logs to console the description
+	db.Create(&todo)                                                                                               // Inserts the struct into the database
+	result := db.Last(&todo)                                                                                       // Gets last record ordered by primary key
+	w.Header().Set("Content-Type", "application/json")                                                             // Adds json header
+	json.NewEncoder(w).Encode(result.Value)                                                                        // Responds with the last record
 }
 
 // Gets all the complete items
@@ -85,7 +89,7 @@ func updateItem(w http.ResponseWriter, r *http.Request) {
 		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating Item")
 		todo := &ToDoItem{}
 		db.First(&todo, id)
-		todo.completion = completed
+		todo.Completion = completed
 		w.Header().Set("Content-Type", "application/json")
 	}
 
