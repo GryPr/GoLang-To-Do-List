@@ -1,3 +1,10 @@
 # GoLang To-Do-List
 
-This is a to-do list web application written in Go using REST API and PostgreSQL. It is currently a work-in-progress, and may be renamed if I decide to expand on the idea.
+## What is this?
+This is a simple to-do list web app backend. It implements a REST API with CRUD functions to handle PostgreSQL database changes.
+
+## Dependencies
+This project has several dependencies on top of the standard packages:
+* Gorilla/Mux (github.com/gorilla/mux)
+* GORM (github.com/jinzhu/gorm)
+* Logrus (github.com/sirupsen/logrus)
