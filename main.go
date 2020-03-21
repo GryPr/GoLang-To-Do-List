@@ -77,18 +77,21 @@ func getIncompleteItems(w http.ResponseWriter, r *http.Request) {
 // Updates the completion of an item
 func updateItem(w http.ResponseWriter, r *http.Request) {
 	log.Info("Updating specific item")
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"]) // string to int
-
-	err := getItemsByID(id)
-	if err == false {
+	decoder := json.NewDecoder(r.Body)
+	var todo ToDoItem
+	err := decoder.Decode(&todo)
+	if err != nil {
+		panic(err)
+	}
+	foundItems := getItemsByID(todo.ID)
+	if foundItems == false {
 		w.Header().Set("Content-Type", "application/json")
 		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
 	} else {
 		completed, _ := strconv.ParseBool(r.FormValue("completed")) // Parses the bool from the POST
-		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating Item")
+		log.WithFields(log.Fields{"Id": todo.ID, "Completed": completed}).Info("Updating Item")
 		todo := &ToDoItem{}
-		db.First(&todo, id)
+		db.First(&todo, todo.ID)
 		todo.Completion = completed
 		w.Header().Set("Content-Type", "application/json")
 	}
@@ -116,8 +119,8 @@ func deleteItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func getItemsByCompletion(completion bool) interface{} {
-	var tditems []ToDoItem
-	toDoItems := db.Where("completion = ?", completion).Find(&tditems).Value
+	var tditems []ToDoItem                                                   // Array of ToDoItem struct
+	toDoItems := db.Where("completion = ?", completion).Find(&tditems).Value // Finding which database items are
 	return toDoItems
 }
 
