@@ -29,6 +29,7 @@ type ToDoItem struct {
 	ID          int    `gorm:"primary_key;auto_increment"`
 	Description string `json:"description"`
 	Completion  bool   `json:"completion"`
+	Node        int    `json:"node"`
 }
 
 func init() {
@@ -147,7 +148,7 @@ func main() {
 		fmt.Println("Sucessfully connected to the database")
 	}
 
-	db.Debug().DropTableIfExists(&ToDoItem{})
+	//db.Debug().DropTableIfExists(&ToDoItem{})
 	db.Debug().AutoMigrate(&ToDoItem{})
 
 	log.Info("Starting API Server")
