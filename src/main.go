@@ -8,10 +8,9 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/tools/go/packages"
 
 	// Custom packages
-	items "src/items"
+	items "./items"
 )
 
 const (
@@ -27,6 +26,7 @@ var db, err = gorm.Open("postgres", psqlInfo)
 
 func main() {
 	defer db.Close()
+	items.InitDB(psqlInfo)
 
 	// Setting up database
 
@@ -44,11 +44,11 @@ func main() {
 
 	// Setting up the router
 	router := mux.NewRouter()
-	router.HandleFunc("/ping", items.health).Methods("GET")
-	router.HandleFunc("/todo", items.createItem).Methods("POST")
-	router.HandleFunc("/todo-complete", items.getCompleteItems).Methods("GET")
-	router.HandleFunc("/todo-incomplete", items.getIncompleteItems).Methods("GET")
-	router.HandleFunc("/todo/{id}", items.updateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", items.deleteItem).Methods("DELETE")
+	router.HandleFunc("/ping", items.Health).Methods("GET")
+	router.HandleFunc("/todo", items.CreateItem).Methods("POST")
+	router.HandleFunc("/todo-complete", items.GetCompleteItems).Methods("GET")
+	router.HandleFunc("/todo-incomplete", items.GetIncompleteItems).Methods("GET")
+	router.HandleFunc("/todo/{id}", items.UpdateItem).Methods("POST")
+	router.HandleFunc("/todo/{id}", items.DeleteItem).Methods("DELETE")
 	http.ListenAndServe(":8000", router)
 }
