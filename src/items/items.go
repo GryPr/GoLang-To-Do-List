@@ -1,28 +1,14 @@
-package main
+package items
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	log "github.com/sirupsen/logrus"
 )
-
-const (
-	host     = "127.0.0.1"
-	port     = 5432
-	user     = "postgres"
-	password = "gryphticon"
-	dbname   = "todo"
-)
-
-var psqlInfo string = fmt.Sprintf("host=%s port =%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-var db, err = gorm.Open("postgres", psqlInfo)
 
 // ToDoItem struct contains the data of a to-do item
 type ToDoItem struct {
@@ -134,32 +120,4 @@ func getItemsByID(id int) bool {
 		return false
 	}
 	return true
-}
-
-func main() {
-	defer db.Close()
-
-	// Setting up database
-
-	if err != nil {
-		panic(err)
-	}
-	if err == nil {
-		fmt.Println("Sucessfully connected to the database")
-	}
-
-	//db.Debug().DropTableIfExists(&ToDoItem{})
-	db.Debug().AutoMigrate(&ToDoItem{})
-
-	log.Info("Starting API Server")
-
-	// Setting up the router
-	router := mux.NewRouter()
-	router.HandleFunc("/ping", health).Methods("GET")
-	router.HandleFunc("/todo", createItem).Methods("POST")
-	router.HandleFunc("/todo-complete", getCompleteItems).Methods("GET")
-	router.HandleFunc("/todo-incomplete", getIncompleteItems).Methods("GET")
-	router.HandleFunc("/todo/{id}", updateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", deleteItem).Methods("DELETE")
-	http.ListenAndServe(":8000", router)
 }
