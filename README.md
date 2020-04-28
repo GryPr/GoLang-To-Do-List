@@ -3,6 +3,13 @@
 ## What is this?
 This is a simple to-do list web app backend. It implements a REST API with CRUD functions to handle PostgreSQL database changes.
 
+## To-do
+* Authentication of users
+* Tree-structure to-do list
+
+## Future plans
+This project will be paired with a website frontend which will allow users to manage their to-do list.
+
 ## Dependencies
 This project has several dependencies on top of the standard packages:
 * [Gorilla/Mux](https://github.com/gorilla/mux)
