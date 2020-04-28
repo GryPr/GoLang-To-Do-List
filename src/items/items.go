@@ -1,28 +1,14 @@
-package main
+package items
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	log "github.com/sirupsen/logrus"
 )
-
-const (
-	host     = "127.0.0.1"
-	port     = 5432
-	user     = "postgres"
-	password = "gryphticon"
-	dbname   = "todo"
-)
-
-var psqlInfo string = fmt.Sprintf("host=%s port =%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-var db, err = gorm.Open("postgres", psqlInfo)
 
 // ToDoItem struct contains the data of a to-do item
 type ToDoItem struct {
@@ -38,14 +24,14 @@ func init() {
 }
 
 // Health returns the API health
-func health(w http.ResponseWriter, r *http.Request) {
+func Health(w http.ResponseWriter, r *http.Request) {
 	log.Info("API Health is OK")                       // Logs to console API Health
 	w.Header().Set("Content-Type", "application/json") // Sets the content type to JSON
 	io.WriteString(w, `{"alive": true}`)               // JSON response to client
 }
 
-// createItem adds a new To-Do item to the database
-func createItem(w http.ResponseWriter, r *http.Request) {
+// CreateItem adds a new To-Do item to the database
+func CreateItem(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var todo ToDoItem
 	err := decoder.Decode(&todo)
@@ -59,24 +45,24 @@ func createItem(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result.Value)                                                                        // Responds with the last record
 }
 
-// Gets all the complete items
-func getCompleteItems(w http.ResponseWriter, r *http.Request) {
+// GetCompleteItems returns all the complete items
+func GetCompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting completed items")
 	completedItems := getItemsByCompletion(true)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(completedItems)
 }
 
-// Gets all the incomplete items
-func getIncompleteItems(w http.ResponseWriter, r *http.Request) {
+// GetIncompleteItems returns all the incomplete items
+func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting incomplete items")
 	incompleItems := getItemsByCompletion(false)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(incompleItems)
 }
 
-// Updates the completion of an item
-func updateItem(w http.ResponseWriter, r *http.Request) {
+// UpdateItem updates the completion of an item
+func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	log.Info("Updating specific item")
 	decoder := json.NewDecoder(r.Body)
 	var todo ToDoItem
@@ -99,7 +85,8 @@ func updateItem(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func deleteItem(w http.ResponseWriter, r *http.Request) {
+// DeleteItem receives an ID from the request and deletes an item
+func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	// Gets the ID from the request and converts it from string to int
 	vars := mux.Vars(r) // Gets the variable from the request
 	id, _ := strconv.Atoi(vars["id"])
@@ -134,32 +121,4 @@ func getItemsByID(id int) bool {
 		return false
 	}
 	return true
-}
-
-func main() {
-	defer db.Close()
-
-	// Setting up database
-
-	if err != nil {
-		panic(err)
-	}
-	if err == nil {
-		fmt.Println("Sucessfully connected to the database")
-	}
-
-	//db.Debug().DropTableIfExists(&ToDoItem{})
-	db.Debug().AutoMigrate(&ToDoItem{})
-
-	log.Info("Starting API Server")
-
-	// Setting up the router
-	router := mux.NewRouter()
-	router.HandleFunc("/ping", health).Methods("GET")
-	router.HandleFunc("/todo", createItem).Methods("POST")
-	router.HandleFunc("/todo-complete", getCompleteItems).Methods("GET")
-	router.HandleFunc("/todo-incomplete", getIncompleteItems).Methods("GET")
-	router.HandleFunc("/todo/{id}", updateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", deleteItem).Methods("DELETE")
-	http.ListenAndServe(":8000", router)
 }
