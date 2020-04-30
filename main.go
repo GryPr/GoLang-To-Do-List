@@ -11,6 +11,7 @@ import (
 
 	// Custom packages
 	items "./items"
+	users "./users"
 )
 
 const (
@@ -27,6 +28,7 @@ var db, err = gorm.Open("postgres", psqlInfo)
 func main() {
 	defer db.Close()
 	items.InitDB(psqlInfo)
+	users.InitDB(psqlInfo)
 
 	// Setting up database
 
