@@ -42,23 +42,23 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	db.Create(&todo)                                                                                               // Inserts the struct into the database
 	result := db.Last(&todo)                                                                                       // Gets last record ordered by primary key
 	w.Header().Set("Content-Type", "application/json")                                                             // Adds json header
-	json.NewEncoder(w).Encode(result.Value)                                                                        // Responds with the last record
+	json.NewEncoder(w).Encode(&result.Value)                                                                       // Responds with the last record
 }
 
 // GetCompleteItems returns all the complete items
 func GetCompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting completed items")
 	completedItems := getItemsByCompletion(true)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(completedItems)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(&completedItems)
 }
 
 // GetIncompleteItems returns all the incomplete items
 func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting incomplete items")
 	incompleItems := getItemsByCompletion(false)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(incompleItems)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(&incompleItems)
 }
 
 // GetAllItems returns all the items
@@ -67,7 +67,7 @@ func GetAllItems(w http.ResponseWriter, r *http.Request) {
 	var tditems []ToDoItem // Array of ToDoItem struct
 	allItems := db.Find(&tditems).Value
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(allItems)
+	json.NewEncoder(w).Encode(&allItems)
 }
 
 // UpdateItem updates the completion of an item
