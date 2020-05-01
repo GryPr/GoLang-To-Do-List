@@ -49,7 +49,8 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 func GetCompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting completed items")
 	completedItems := getItemsByCompletion(true)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(&completedItems)
 }
 
@@ -57,7 +58,8 @@ func GetCompleteItems(w http.ResponseWriter, r *http.Request) {
 func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting incomplete items")
 	incompleItems := getItemsByCompletion(false)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(&incompleItems)
 }
 
@@ -67,6 +69,7 @@ func GetAllItems(w http.ResponseWriter, r *http.Request) {
 	var tditems []ToDoItem // Array of ToDoItem struct
 	allItems := db.Find(&tditems).Value
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(&allItems)
 }
 
