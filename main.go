@@ -48,6 +48,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/ping", items.Health).Methods("GET")
 	router.HandleFunc("/todo", items.CreateItem).Methods("POST")
+	router.HandleFunc("/todo", items.GetAllItems).Methods("GET")
 	router.HandleFunc("/todo-complete", items.GetCompleteItems).Methods("GET")
 	router.HandleFunc("/todo-incomplete", items.GetIncompleteItems).Methods("GET")
 	router.HandleFunc("/todo/{id}", items.UpdateItem).Methods("POST")

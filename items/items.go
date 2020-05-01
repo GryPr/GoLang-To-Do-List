@@ -61,6 +61,15 @@ func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(incompleItems)
 }
 
+// GetAllItems returns all the items
+func GetAllItems(w http.ResponseWriter, r *http.Request) {
+	log.Info("Getting all items")
+	var tditems []ToDoItem // Array of ToDoItem struct
+	allItems := db.Find(&tditems).Value
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(allItems)
+}
+
 // UpdateItem updates the completion of an item
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	log.Info("Updating specific item")
