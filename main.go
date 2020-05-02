@@ -8,10 +8,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	log "github.com/sirupsen/logrus"
-
-	// Custom packages
-	items "./items"
-	users "./users"
 )
 
 const (
@@ -27,8 +23,6 @@ var db, err = gorm.Open("postgres", psqlInfo)
 
 func main() {
 	defer db.Close()
-	items.InitDB(psqlInfo)
-	users.InitDB(psqlInfo)
 
 	// Setting up database
 
@@ -40,18 +34,18 @@ func main() {
 	}
 
 	//db.Debug().DropTableIfExists(&ToDoItem{})
-	db.Debug().AutoMigrate(&items.ToDoItem{})
+	db.Debug().AutoMigrate(&ToDoItem{})
 
 	log.Info("Starting API Server")
 
 	// Setting up the router
 	router := mux.NewRouter()
-	router.HandleFunc("/ping", items.Health).Methods("GET")
-	router.HandleFunc("/todo", items.CreateItem).Methods("POST")
-	router.HandleFunc("/todo", items.GetAllItems).Methods("GET")
-	router.HandleFunc("/todo-complete", items.GetCompleteItems).Methods("GET")
-	router.HandleFunc("/todo-incomplete", items.GetIncompleteItems).Methods("GET")
-	router.HandleFunc("/todo/{id}", items.UpdateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", items.DeleteItem).Methods("DELETE")
+	router.HandleFunc("/ping", Health).Methods("GET")
+	router.HandleFunc("/todo", CreateItem).Methods("POST")
+	router.HandleFunc("/todo", GetAllItems).Methods("GET")
+	router.HandleFunc("/todo-complete", GetCompleteItems).Methods("GET")
+	router.HandleFunc("/todo-incomplete", GetIncompleteItems).Methods("GET")
+	router.HandleFunc("/todo/{id}", UpdateItem).Methods("POST")
+	router.HandleFunc("/todo/{id}", DeleteItem).Methods("DELETE")
 	http.ListenAndServe(":8000", router)
 }
