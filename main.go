@@ -20,6 +20,7 @@ const (
 
 var psqlInfo string = fmt.Sprintf("host=%s port =%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 var db, err = gorm.Open("postgres", psqlInfo)
+var router = mux.NewRouter()
 
 func main() {
 	defer db.Close()
@@ -39,13 +40,6 @@ func main() {
 	log.Info("Starting API Server")
 
 	// Setting up the router
-	router := mux.NewRouter()
-	router.HandleFunc("/ping", Health).Methods("GET")
-	router.HandleFunc("/todo", CreateItem).Methods("POST")
-	router.HandleFunc("/todo", GetAllItems).Methods("GET")
-	router.HandleFunc("/todo-complete", GetCompleteItems).Methods("GET")
-	router.HandleFunc("/todo-incomplete", GetIncompleteItems).Methods("GET")
-	router.HandleFunc("/todo/{id}", UpdateItem).Methods("POST")
-	router.HandleFunc("/todo/{id}", DeleteItem).Methods("DELETE")
+	Routes()
 	http.ListenAndServe(":8000", router)
 }
