@@ -7,6 +7,6 @@ func Routes() {
 	router.HandleFunc("/todo", GetAllItems).Methods("GET")
 	router.HandleFunc("/todo-complete", GetCompleteItems).Methods("GET")
 	router.HandleFunc("/todo-incomplete", GetIncompleteItems).Methods("GET")
-	router.HandleFunc("/todo/{id}", UpdateCompletionItem).Methods("POST")
+	router.HandleFunc("/todo/{id}", UpdateCompletionItem).Methods("PUT")
 	router.HandleFunc("/todo/{id}", DeleteItem).Methods("DELETE")
 }

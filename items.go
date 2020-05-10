@@ -82,6 +82,7 @@ func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 	var todo ToDoItem
 	err := decoder.Decode(&todo)
 	var td ToDoItem
+	db.First(&td, id)
 	td.Completion = todo.Completion
 	if err != nil {
 		panic(err)
@@ -96,7 +97,7 @@ func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 		db.Save(&td)
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		json.NewEncoder(w).Encode(&todo)
+		json.NewEncoder(w).Encode(&td)
 	}
 
 }
