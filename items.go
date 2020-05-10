@@ -22,12 +22,17 @@ func init() {
 	log.SetReportCaller(true)
 }
 
+func setupResponse(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
 // Health returns the API health
 func Health(w http.ResponseWriter, r *http.Request) {
 	log.Info("API Health is OK")                       // Logs to console API Health
 	w.Header().Set("Content-Type", "application/json") // Sets the content type to JSON
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	io.WriteString(w, `{"alive": true}`) // JSON response to client
+	io.WriteString(w, `{"alive": true}`)               // JSON response to client
 }
 
 // CreateItem adds a new To-Do item to the database
@@ -42,7 +47,8 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	db.Create(&todo)                                                                                               // Inserts the struct into the database
 	result := db.Last(&todo)                                                                                       // Gets last record ordered by primary key
 	w.Header().Set("Content-Type", "application/json")                                                             // Adds json header
-	json.NewEncoder(w).Encode(&result.Value)                                                                       // Responds with the last record
+	setupResponse(&w)
+	json.NewEncoder(w).Encode(&result.Value) // Responds with the last record
 }
 
 // GetCompleteItems returns all the complete items
@@ -50,7 +56,7 @@ func GetCompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting completed items")
 	completedItems := getItemsByCompletion(true)
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	setupResponse(&w)
 	json.NewEncoder(w).Encode(&completedItems)
 }
 
@@ -59,7 +65,7 @@ func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting incomplete items")
 	incompleItems := getItemsByCompletion(false)
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	setupResponse(&w)
 	json.NewEncoder(w).Encode(&incompleItems)
 }
 
@@ -69,7 +75,7 @@ func GetAllItems(w http.ResponseWriter, r *http.Request) {
 	var tditems []ToDoItem // Array of ToDoItem struct
 	allItems := db.Order("id").Find(&tditems).Value
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	setupResponse(&w)
 	json.NewEncoder(w).Encode(&allItems)
 }
 
@@ -90,13 +96,13 @@ func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 	foundItems := getItemsByID(id)
 	if foundItems == false {
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		setupResponse(&w)
 		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
 	} else {
 		log.WithFields(log.Fields{"Id": id, "Completed": todo.Completion}).Info("Updating Item")
 		db.Save(&td)
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		setupResponse(&w)
 		json.NewEncoder(w).Encode(&td)
 	}
 
@@ -111,7 +117,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	err := getItemsByID(id)
 	if err == false {
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		setupResponse(&w)
 		io.WriteString(w, `{"deleted": false, "error" "Record Not Found"}`) // Error JSON
 	} else {
 		log.WithFields(log.Fields{"Id": id}).Info("Deleting Item")
@@ -119,7 +125,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		db.First(&todo, id)
 		db.Delete(&todo)
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		setupResponse(&w)
 		io.WriteString(w, `{"deleted": true}`)
 	}
 
