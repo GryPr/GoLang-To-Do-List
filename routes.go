@@ -1,5 +1,6 @@
 package main
 
+// Routes handles the routing of functions
 func Routes() {
 	router.HandleFunc("/ping", Health).Methods("GET")
 	router.HandleFunc("/todo", CreateItem).Methods("POST")
