@@ -15,7 +15,6 @@ type ToDoItem struct {
 	ID          int    `gorm:"primary_key;auto_increment"`
 	Description string `json:"description"`
 	Completion  bool   `json:"completion"`
-	Node        int    `json:"node"`
 }
 
 func init() {
@@ -27,7 +26,8 @@ func init() {
 func Health(w http.ResponseWriter, r *http.Request) {
 	log.Info("API Health is OK")                       // Logs to console API Health
 	w.Header().Set("Content-Type", "application/json") // Sets the content type to JSON
-	io.WriteString(w, `{"alive": true}`)               // JSON response to client
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	io.WriteString(w, `{"alive": true}`) // JSON response to client
 }
 
 // CreateItem adds a new To-Do item to the database
@@ -67,32 +67,36 @@ func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 func GetAllItems(w http.ResponseWriter, r *http.Request) {
 	log.Info("Getting all items")
 	var tditems []ToDoItem // Array of ToDoItem struct
-	allItems := db.Find(&tditems).Value
+	allItems := db.Order("id").Find(&tditems).Value
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(&allItems)
 }
 
-// UpdateItem updates the completion of an item
-func UpdateItem(w http.ResponseWriter, r *http.Request) {
+// UpdateCompletionItem updates the completion of an item
+func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 	log.Info("Updating specific item")
+	vars := mux.Vars(r) // Gets the variable from the request
+	id, _ := strconv.Atoi(vars["id"])
 	decoder := json.NewDecoder(r.Body)
 	var todo ToDoItem
 	err := decoder.Decode(&todo)
+	var td ToDoItem
+	td.Completion = todo.Completion
 	if err != nil {
 		panic(err)
 	}
-	foundItems := getItemsByID(todo.ID)
+	foundItems := getItemsByID(id)
 	if foundItems == false {
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
 	} else {
-		completed, _ := strconv.ParseBool(r.FormValue("completed")) // Parses the bool from the POST
-		log.WithFields(log.Fields{"Id": todo.ID, "Completed": completed}).Info("Updating Item")
-		todo := &ToDoItem{}
-		db.First(&todo, todo.ID)
-		todo.Completion = completed
+		log.WithFields(log.Fields{"Id": id, "Completed": todo.Completion}).Info("Updating Item")
+		db.Save(&td)
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		json.NewEncoder(w).Encode(&todo)
 	}
 
 }
@@ -106,6 +110,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 	err := getItemsByID(id)
 	if err == false {
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		io.WriteString(w, `{"deleted": false, "error" "Record Not Found"}`) // Error JSON
 	} else {
 		log.WithFields(log.Fields{"Id": id}).Info("Deleting Item")
@@ -113,6 +118,7 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 		db.First(&todo, id)
 		db.Delete(&todo)
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		io.WriteString(w, `{"deleted": true}`)
 	}
 
