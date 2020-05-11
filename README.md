@@ -3,6 +3,9 @@
 ## What is this?
 This is a simple to-do list web app backend. It implements a REST API with CRUD functions to handle PostgreSQL database changes.
 
+## Frontend
+An Angular Frontend is currently being developed for this backend. The Github repository can be accessed [here](https://github.com/GryPr/GoToDo-Angular-Frontend)
+
 ## To-do
 * Authentication of users
 * Tree-structure to-do list
