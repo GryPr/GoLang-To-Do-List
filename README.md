@@ -18,3 +18,13 @@ This project has several dependencies on top of the standard packages:
 * [Gorilla/Mux](https://github.com/gorilla/mux)
 * [GORM](https://github.com/jinzhu/gorm)
 * [Logrus](https://github.com/sirupsen/logrus)
+
+## Demo
+
+### POST Request (Create task)
+![](https://i.imgur.com/yJoXM4X.gif)
+
+### PUT Request (Update task completion and description)
+![](https://i.imgur.com/jYr7lYm.gif)
+### DELETE Request (Delete task)
+![](https://i.imgur.com/EtnlKZS.gif)
