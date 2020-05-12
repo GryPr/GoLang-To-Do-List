@@ -87,9 +87,6 @@ func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var todo ToDoItem
 	err := decoder.Decode(&todo)
-	var td ToDoItem
-	db.First(&td, id)
-	td.Completion = todo.Completion
 	if err != nil {
 		panic(err)
 	}
@@ -100,10 +97,10 @@ func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, `{"deleted": false, "error": "Record Not Found"}`)
 	} else {
 		log.WithFields(log.Fields{"Id": id, "Completed": todo.Completion}).Info("Updating Item")
-		db.Save(&td)
+		db.Save(&todo)
 		w.Header().Set("Content-Type", "application/json")
 		setupResponse(&w)
-		json.NewEncoder(w).Encode(&td)
+		json.NewEncoder(w).Encode(&todo)
 	}
 
 }
@@ -146,4 +143,9 @@ func getItemsByID(id int) bool {
 		return false
 	}
 	return true
+}
+
+// PreflightHandling handles the preflight request
+func PreflightHandling(w http.ResponseWriter, r *http.Request) {
+	setupResponse(&w)
 }
