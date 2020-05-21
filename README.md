@@ -4,7 +4,9 @@
 This is a simple to-do list web app backend. It implements a REST API with CRUD functions to handle PostgreSQL database changes.
 
 ## Frontend
-An Angular Frontend is currently being developed for this backend. The Github repository can be accessed [here](https://github.com/GryPr/GoToDo-Angular-Frontend)
+An Angular Frontend was developped using the Material UI library for this backend. The Github repository can be accessed [here](https://github.com/GryPr/GoToDo-Angular-Frontend)
+
+A React Frontend is currently under development for this backend. It currently only implements the GET requests for the list of tasks. The Github repository can be accessed [here](https://github.com/GryPr/React-Website-Test)
 
 ## To-do
 * Authentication of users
