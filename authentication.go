@@ -17,7 +17,7 @@ const (
 	// TenantID is the ID of the Azure Tenant
 	TenantID = "53109908-9db2-4dbd-ab3e-9c40ab19bac9"
 	// ClientID is the ID of the Azure Client
-	ClientID = "453b11f3-cc26-422c-b466-2c6ddd60f6eb"
+	ClientID = "1832d398-74c9-40e3-8132-d8b45b995035"
 )
 
 // AzureProvider contains information to verify tokens
