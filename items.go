@@ -38,6 +38,15 @@ func Health(w http.ResponseWriter, r *http.Request) {
 
 // CreateItem adds a new To-Do item to the database
 func CreateItem(w http.ResponseWriter, r *http.Request) {
+	token, ok := HandleTokenVerification(r)
+	if ok != nil {
+		fmt.Println(err)
+		return
+	}
+	if token == nil {
+		fmt.Println("Token not verified!")
+		return
+	}
 	decoder := json.NewDecoder(r.Body)
 	var todo ToDoItem
 	err := decoder.Decode(&todo)
@@ -72,14 +81,14 @@ func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 
 // GetAllItems returns all the items
 func GetAllItems(w http.ResponseWriter, r *http.Request) {
-	token, err := HandleTokenVerification(r)
-	if err != nil {
+	token, ok := HandleTokenVerification(r)
+	if ok != nil {
 		fmt.Println(err)
+		return
 	}
-	if token != nil {
-		fmt.Println("Token verified!")
-	} else {
+	if token == nil {
 		fmt.Println("Token not verified!")
+		return
 	}
 	log.Info("Getting all items")
 	var tditems []ToDoItem // Array of ToDoItem struct
@@ -91,6 +100,15 @@ func GetAllItems(w http.ResponseWriter, r *http.Request) {
 
 // UpdateCompletionItem updates the completion of an item
 func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
+	token, ok := HandleTokenVerification(r)
+	if ok != nil {
+		fmt.Println(err)
+		return
+	}
+	if token == nil {
+		fmt.Println("Token not verified!")
+		return
+	}
 	log.Info("Updating specific item")
 	vars := mux.Vars(r) // Gets the variable from the request
 	id, _ := strconv.Atoi(vars["id"])
@@ -117,10 +135,18 @@ func UpdateCompletionItem(w http.ResponseWriter, r *http.Request) {
 
 // DeleteItem receives an ID from the request and deletes an item
 func DeleteItem(w http.ResponseWriter, r *http.Request) {
+	token, ok := HandleTokenVerification(r)
+	if ok != nil {
+		fmt.Println(err)
+		return
+	}
+	if token == nil {
+		fmt.Println("Token not verified!")
+		return
+	}
 	// Gets the ID from the request and converts it from string to int
 	vars := mux.Vars(r) // Gets the variable from the request
 	id, _ := strconv.Atoi(vars["id"])
-
 	err := getItemsByID(id)
 	if err == false {
 		w.Header().Set("Content-Type", "application/json")

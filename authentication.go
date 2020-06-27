@@ -81,6 +81,9 @@ func NewAzureProvider() (*AzureProvider, error) {
 func HandleTokenVerification(r *http.Request) (*oidc.IDToken, error) {
 	ctx := context.Background()
 	reqToken := r.Header.Get("Authorization")
+	if reqToken == "" {
+		return nil, nil
+	}
 	splitToken := strings.Split(reqToken, "Bearer ")
 	reqToken = splitToken[1]
 	//fmt.Printf(reqToken)
