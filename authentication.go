@@ -34,7 +34,7 @@ type oidcDiscoveryInfo struct {
 // NewAzureProvider returns struct azureProvider to verify tokens
 func NewAzureProvider() (*AzureProvider, error) {
 	httpClient := cleanhttp.DefaultClient()
-	discoveryURL := "https://login.microsoftonline.com/localgotodo.onmicrosoft.com/v2.0/.well-known/openid-configuration"
+	discoveryURL := "https://localgotodo.b2clogin.com/localgotodo.onmicrosoft.com/b2c_1_susi/v2.0/.well-known/openid-configuration"
 	req, err := http.NewRequest("GET", discoveryURL, nil)
 	if err != nil {
 		return nil, err
