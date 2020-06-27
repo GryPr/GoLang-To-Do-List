@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -71,6 +72,15 @@ func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 
 // GetAllItems returns all the items
 func GetAllItems(w http.ResponseWriter, r *http.Request) {
+	token, err := HandleTokenVerification(r)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if token != nil {
+		fmt.Println("Token verified!")
+	} else {
+		fmt.Println("Token not verified!")
+	}
 	log.Info("Getting all items")
 	var tditems []ToDoItem // Array of ToDoItem struct
 	allItems := db.Order("id").Find(&tditems).Value
